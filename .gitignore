@@ -1,0 +1,9 @@
+/elpa
+/elpa/
+elpa/
+session.*
+*.elc
+bookmarks/
+*.el~
+*.org~
+auto-save-list/
