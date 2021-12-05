@@ -1,3 +1,6 @@
 /elpa
 /elpa/
 elpa/
+session.*
+*.elc
+bookmarks/

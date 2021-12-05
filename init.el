@@ -1,3 +1,12 @@
+
+
+(setq user-full-name "Thomas Dickson")
+
+(if (string= (system-name) "craptop") 
+    (setq default-directory "/home/thomas/")
+    (setq org-default-notes-file "/home/thomas/org-admin/organiser.org")
+    (setq org-agenda-files (quote ("/home/thomas/org-admin"))))
+
 ;;; -*- mode: emacs-lisp; lexical-binding: t -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Emacs Configuration - Copied from Tammy Cravit - tammymakesthings@gmail.com
@@ -60,6 +69,12 @@ tangled, and the tangled file is compiled."
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(setq backup-directory-alist '(("." . "~/.emacs.d/emacs/backups")))
+(setq delete-old-versions -1)
+(setq version-control t)
+(setq vc-make-backup-files t)
+(setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
@@ -94,9 +109,11 @@ tangled, and the tangled file is compiled."
 
 (global-set-key (kbd "C-c o") 
                 (lambda () (interactive) (find-file "~/organiser.org")))
-
 (global-set-key (kbd "C-c c") 'org-capture)
-(setq org-default-notes-file "~/organiser.org")
+(global-set-key (kbd "C-c a") 'org-agenda)
+
+(setq org-todo-keywords
+  '((sequence "TODO" "IN-PROGRESS" "WAITING" "DONE")))
 
 ;; Run/highlight code using babel in org-mode
 (org-babel-do-load-languages

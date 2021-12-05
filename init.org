@@ -7,7 +7,23 @@
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
 #+PROPERTY: header-args :tangle init.el
 
-This file defines my Emacs config in org mode. Check out [[https://tammymakesthings.com/posts/2020-04-28-literate-emacs-configuration-in-org-mode/][this link]] for where I copied the method from.
+This file defines my Emacs config in org mode. 
+
+- Check out [[https://tammymakesthings.com/posts/2020-04-28-literate-emacs-configuration-in-org-mode/][this link]] for where I copied the method for creating the init file using org mode from.
+- [[https://sachachua.com/dotemacs/#orgb968991][Here's]] another example of a great emacs file.
+
+** Setting constants
+
+Location for specifying user and system specific constants.
+
+#+begin_src emacs-lisp :tangle yes
+(setq user-full-name "Thomas Dickson")
+
+(if (string= (system-name) "craptop") 
+    (setq default-directory "/home/thomas/")
+    (setq org-default-notes-file "/home/thomas/org-admin/organiser.org")
+    (setq org-agenda-files (quote ("/home/thomas/org-admin"))))
+#+end_src
 
 ** Header
 
@@ -54,7 +70,7 @@ This snippet allows emacs to run this org file on emacs initialisation.
   (add-hook 'after-save-hook 'tangle-init)
 #+end_src
 
-** Setting minor but useful details
+** Setting UI/UX details
 
 Show the full path in the title bar.
 
@@ -81,6 +97,8 @@ Make ESC quit prompts.
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 #+end_src
 
+** Package management
+
 Initialise package management repos and tools.
 
 #+begin_src emacs-lisp
@@ -101,6 +119,18 @@ Initialise package management repos and tools.
 (require 'use-package)
 (setq use-package-always-ensure t)
 #+end_src 
+
+** Backups
+
+Specifying backup behaviour.
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist '(("." . "~/.emacs.d/emacs/backups")))
+(setq delete-old-versions -1)
+(setq version-control t)
+(setq vc-make-backup-files t)
+(setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+#+end_src
 
 ** Doom modeline
 
@@ -152,19 +182,30 @@ Org mode configuration. Using this [[https://sachachua.com/blog/2015/02/learn-ta
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 #+end_src
 
-Binding C-c o to open up the main org file from emacs.
+Setting key bindings:
+
+1. C-c o to open up the main org file from emacs.
+2. C-c c to open up task capture.
+3. C-c a to open up agenda mode.
 
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-c o") 
                 (lambda () (interactive) (find-file "~/organiser.org")))
+(global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c a") 'org-agenda)
 #+end_src
 
-Binding C-c c to org capture - for saving notes. Also defining the location of the default place to save notes.
+Specifying org mode behaviour:
+
+1. Todo keywords
+1. Tags
 
 #+begin_src emacs-lisp
-(global-set-key (kbd "C-c c") 'org-capture)
-(setq org-default-notes-file "~/organiser.org")
+(setq org-todo-keywords
+  '((sequence "TODO" "IN-PROGRESS" "WAITING" "DONE")))
 #+end_src
+
+** Org babel behaviour
 
 Defining org-babel behaviour - enabling literate programming.
 
@@ -199,7 +240,7 @@ Some more nice packages for use.
 (global-visual-line-mode t) ; wrap word at the end of line
 #+end_src
 
-** Common list development
+** Common lisp development
 
 #+begin_src emacs-lisp
 (use-package slime)
@@ -240,4 +281,18 @@ Configuring [[https://github.com/joaotavora/yasnippet][yasnippet]].
 #+end_src
 
 
+
+** Magit
+
+
+** Dired
+
+
+** Projectile
+
+#+begin_src lisp
+
+#+end_src
+
+** Avy
 
