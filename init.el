@@ -1,24 +1,10 @@
-
-
 (setq user-full-name "Thomas Dickson")
 
 (if (string= (system-name) "craptop") 
     (setq default-directory "/home/thomas/")
+    (setq user-emacs-directory "/home/thomas/.emacs.d/")
     (setq org-default-notes-file "/home/thomas/org-admin/organiser.org")
     (setq org-agenda-files (quote ("/home/thomas/org-admin"))))
-
-;;; -*- mode: emacs-lisp; lexical-binding: t -*-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Emacs Configuration - Copied from Tammy Cravit - tammymakesthings@gmail.com
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; THIS FILE IS AUTO-GENERATED FROM init.org AND IS REGENERATED EVERY TIME
-;;;; THAT FILE IS SAVED. DO NOT MAKE ANY MODIFICATIONS TO THIS FILE, OR THEY
-;;;; WILL BE LOST WHEN THE SOURCE ORG FILE IS CHANGED!
-;;;;
-;;;; The latest version of the source org file can be found at:
-;;;;
-;;;;     https://github.com/tammymakesthings/emacs_d
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Automatically tangle init.org on save to produce init.el
@@ -39,18 +25,17 @@ tangled, and the tangled file is compiled."
 
 (add-hook 'after-save-hook 'tangle-init)
 
-(setq-default frame-title-format "%b (%f)")
-
 (setq inhibit-startup-message t)
-(scroll-bar-mode -1)        ; Disable visible scrollbar
-(tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
-(menu-bar-mode -1)          ; Disable the menu bar
-
-(set-fringe-mode 10)        ; Give some breathing room
-(set-face-attribute 'default nil :font "Fira Code Retina" :height 120)
-
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+(scroll-bar-mode -1)                                                   ; Disable visible scrollbar
+(tool-bar-mode -1)                                                     ; Disable the toolbar
+(tooltip-mode -1)                                                      ; Disable tooltips
+(menu-bar-mode -1)                                                     ; Disable the menu bar
+(setq-default frame-title-format "%b (%f)")                            ; Show full name in title bar
+(set-fringe-mode 10)                                                   ; Give some breathing room
+(set-face-attribute 'default nil :font "Fira Code Retina" :height 120) ; Set default font
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)                ; Bind Esc to escape
+(global-visual-line-mode t)                                            ; Wrap word at the end of line
+(add-to-list 'default-frame-alist '(fullscreen . maximized))           ; Maximise emacs on start
 
 (require 'package)
 
@@ -98,10 +83,13 @@ tangled, and the tangled file is compiled."
   :config
   (ivy-mode 1))
 
+(setq org-modules '(org-habit))
+(eval-after-load 'org
+  '(org-load-modules-maybe t))
+
 (column-number-mode)
 (global-display-line-numbers-mode t)
 
-;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
                 term-mode-hook
                 eshell-mode-hook))
@@ -114,6 +102,7 @@ tangled, and the tangled file is compiled."
 
 (setq org-todo-keywords
   '((sequence "TODO" "IN-PROGRESS" "WAITING" "DONE")))
+(setq org-tag-alist '(("@work" . ?w) ("@home" . ?h) ("@phys" . ?p) ("@scala" . ?s) ("@lisp" . ?l)))
 
 ;; Run/highlight code using babel in org-mode
 (org-babel-do-load-languages
@@ -135,8 +124,6 @@ tangled, and the tangled file is compiled."
   :init (load-theme 'doom-palenight t))
 
 (use-package all-the-icons)
-
-(global-visual-line-mode t) ; wrap word at the end of line
 
 (use-package slime)
 
@@ -167,3 +154,23 @@ tangled, and the tangled file is compiled."
 
 (define-key yas-minor-mode-map [(tab)] nil)
 (define-key yas-minor-mode-map (kbd "TAB") nil)
+
+(use-package magit
+  :ensure t)
+
+(use-package projectile)
+(projectile-mode +1)
+(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+
+(use-package avy
+  :ensure t
+  :bind (("M-s" . avy-goto-word-1)))
+
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))

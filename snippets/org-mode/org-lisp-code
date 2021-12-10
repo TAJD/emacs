@@ -2,6 +2,6 @@
 # name: org-lisp-code
 # --
 #+begin_src lisp
-
+$1
 #+end_src
 
