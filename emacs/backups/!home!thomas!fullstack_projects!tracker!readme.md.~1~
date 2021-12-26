@@ -1,5 +1,0 @@
-# Readme
-
-Schema development in workout-tracker.org
-
-Front end development in app.py with Streamlit and Psycopg2. Use `pipenv shell` to activate environment in local repo.

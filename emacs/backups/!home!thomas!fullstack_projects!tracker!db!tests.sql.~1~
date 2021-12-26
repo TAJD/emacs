@@ -1,6 +1,0 @@
-\echo 'Run tests'
-
-\set VERBOSITY terse
-\set ON ERROR STOP true
-
-set search_path = data, public;

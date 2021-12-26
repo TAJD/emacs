@@ -1,6 +1,0 @@
-#+title: Notes from Chapter 4 of On Lisp 
-#+author: Tom
-
-* Utility functions
-
-Operators in Lisp come in two forms - macros and functions.

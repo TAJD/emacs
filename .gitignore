@@ -7,3 +7,5 @@ bookmarks/
 *.el~
 *.org~
 auto-save-list/
+/backups
+backups/
