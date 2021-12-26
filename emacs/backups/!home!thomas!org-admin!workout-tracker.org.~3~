@@ -1,0 +1,314 @@
+* Designing an app for tracking my workouts
+
+I want to be able to quickly record my daily measurements and workouts quickly and share them with JP. Excel isn't going to cut it.
+
+** Technology
+
+Stick to what I know:
+
+- Python3 and Streamlit for the front end
+- Postgres and Supabase for the back end
+
+What is the most important thing about any app design?
+
+The schema. Key things to record:
+
+1. Workouts
+1. Weight
+1. Mood
+1. Sleep
+
+- Table to record date and workout number
+- Table to record workout number and exercise number
+- Table to record exercise number and set/weight/reps
+- Table to record daily metrics
+
+** Implementation plan
+
+1. Develop database schema (locally)
+2. Develop front end (locally)
+3. Deploy database to Supabase and check that queries still work to/from org notes.
+4. Deploy front end to Streamlit.
+
+** Links/resources
+
+[[https://www.orgmode.org/worg/org-contrib/babel/languages/ob-doc-sql.html][- Notes for using SQL in org-mode]]
+- [[https://docs.streamlit.io/knowledge-base/tutorials/databases/postgresql][Connecting Streamlit app to Postgres]]
+
+* Schema development [5/6]
+  :PROPERTIES:
+  :header-args:sql: :engine postgresql :dbport 5432 :dbhost 127.0.0.1 :dbuser testuser :dbpassword password :database testdb
+  :END:
+
+Required functionality:
+
+- [X] Save list of exercises
+- [X] Save a workout
+- [X] Save daily measurements
+
+Database development workflow
+
+- [X] Develop tables
+- [X] Develop insert queries/methodology
+- [ ] Save schema to sql file
+- [ ] Load schema to supabase database
+
+User interaction
+
+- [ ] Org mode template for saving a workout.
+  - [ ] Connection details to supabase database.
+  - [ ] Get workout id given date
+  - [ ] Insert a selection of different exercises.
+
+** Create local database
+
+To be run seperately in the command line: (password)
+
+#+begin_src shell
+sudo -u postgres createuser -P -s -e testuser
+sudo -u postgres createdb testdb -O testuser
+#+end_src
+
+*** Example query from notebook to local postgres server
+
+#+begin_src sql
+  SELECT datname, datdba FROM pg_database
+#+end_src
+
+#+RESULTS:
+| datname   | datdba |
+|-----------+--------|
+| postgres  |     10 |
+| template1 |     10 |
+| template0 |     10 |
+| testdb    |  16386 |
+
+#+RESULTS: my-query
+| DROP TABLE   |
+|--------------|
+| CREATE TABLE |
+| CREATE TABLE |
+| CREATE TABLE |
+
+** Create tables
+*** Daily measurements
+Considerations
+
+- 3 NF
+- Foreign keys.
+  - Workout date/number
+
+#+begin_src sql
+drop table if exists daily;
+create table if not exists daily (
+   record_date date primary key,
+   weight      real,
+   mood        integer,
+   calories    integer,
+   protein     integer,
+   carbs       integer,
+   fat         integer
+);
+#+end_src
+
+#+RESULTS:
+| DROP TABLE   |
+|--------------|
+| CREATE TABLE |
+
+*** Tables for recording a workout
+
+- Workout date/numbers.	   
+- Workout number/exercise. 
+- Workout exercise/set.	   
+
+#+begin_src sql
+drop table if exists workouts, exercise_options, workout_stage;
+create table if not exists workouts (
+   workout_date date,
+   workout_id   serial, 
+   primary key(workout_id)
+);
+create table if not exists exercise_options (						  
+   exercise_id serial,									  
+   exercise_name text unique,
+   primary key(exercise_id)								  			   
+);
+create table if not exists workout_stage (
+  stage_id    serial,
+  workout_id  integer not null references workouts on delete cascade,
+  exercise_id integer not null references exercise_options on delete restrict,
+  set_no      integer not null,
+  reps        integer not null,
+  weight      real,
+  unit        text,
+  primary key(workout_id, exercise_id, set_no)
+);
+#+end_src
+
+#+RESULTS:
+| DROP TABLE   |
+|--------------|
+| CREATE TABLE |
+| CREATE TABLE |
+| CREATE TABLE |
+
+** Insert data
+*** Insert exercise values
+
+#+begin_src sql
+INSERT INTO exercise_options(exercise_name) VALUES ('Chest press'), ('Rack chins');
+#+end_src
+
+#+RESULTS:
+| INSERT 0 2 |
+|------------|
+
+*** Insert a workout
+
+- workout date -> workout id
+- exercise name -> exercise id
+- sets/reps per exercise
+
+#+begin_src sql
+insert into workouts(workout_date) values ('2021-12-12') returning workout_id;
+#+end_src
+
+#+RESULTS:
+| workout_id |
+|------------|
+| 1          |
+| INSERT 0 1 |
+
+- Insert statement using exercise name -> look up id in the background?
+
+#+begin_src sql
+insert into workout_stage(workout_id, exercise_id, set_no, reps, weight, unit) values (1, 1, 1, 10, 50, 'kg');
+#+end_src
+
+#+RESULTS:
+| INSERT 0 1 |
+|------------|
+
+*** Check inserted data
+
+#+begin_src sql
+select * from exercise_options
+#+end_src
+
+#+RESULTS:
+| exercise_id | exercise_name |
+|-------------+---------------|
+|           1 | Chest press   |
+|           2 | Rack chins    |
+
+#+begin_src sql
+select * from workouts
+#+end_src
+
+#+RESULTS:
+| workout_date | workout_id |
+|--------------+------------|
+|   2021-12-12 |          1 |
+
+#+begin_src sql
+with query as (
+select * from workout_stage
+join exercise_options
+on workout_stage.exercise_id = exercise_options.exercise_id
+)
+select workout_id, exercise_name, set_no, reps, weight, unit from query
+#+end_src
+
+#+RESULTS:
+| workout_id | exercise_name | set_no | reps | weight | unit |
+|------------+---------------+--------+------+--------+------|
+|          1 | Chest press   |      1 |   10 |     50 | kg   |
+|          1 | Chest press   |      2 |   10 |     60 | kg   |
+
+Create a function that takes workout_id, exercise_name, set_no, reps, weight, unit and inserts it to the right location?
+
+#+begin_src sql
+drop function if exists store_set;
+create function store_set(workout_id int, name char, set_no int, reps int, weight real, unit char) returns int
+language plpgsql
+as
+$$
+declare 
+   input_exercise_id int;
+   stored_stage_id int; 
+begin 
+   select exercise_id into input_exercise_id from exercise_options where exercise_options.exercise_name = name;
+   insert into workout_stage(workout_id, exercise_id, set_no, reps, weight, unit) 
+   values (workout_id, input_exercise_id, set_no, reps, weight, unit)
+   returning stage_id into stored_stage_id;
+   return stored_stage_id;
+end;
+$$;
+#+end_src
+
+#+RESULTS:
+| DROP FUNCTION   |
+|-----------------|
+| CREATE FUNCTION |
+
+#+begin_src sql
+select store_set(1, 'Chest press', 2, 10, 60, 'kg');
+#+end_src
+
+#+RESULTS:
+| store_set |
+|-----------|
+|         3 |
+|                        |
+** Dump local database schema
+
+#+begin_src sql
+
+#+end_src
+
+- Dump tables, values from exercise_values and functions.
+
+#+begin_src shell
+ls
+#+end_src
+
+#+RESULTS:
+| organiser.org       |
+| organiser.org~      |
+| testdb.sql          |
+| workout-tracker.org |
+
+To dump database schema.
+
+~pg_dump -d testdb -U testuser -h 127.0.0.1 -f dev.sql~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* Front end 
+
+Using streamlit and psycopg2.
+
+Functionality:
+
+- Graph daily metrics.
+  - Query directly from table.
+  - View to show the rolling average.
+- Show the n most recent workouts.
+  - Function to retrieve table for a workout.
+  - Get the workout with the highest id and the next n-1.
+  - Function to display a workout in a table.

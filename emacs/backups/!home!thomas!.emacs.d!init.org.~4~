@@ -1,3 +1,22 @@
+-*- mode: org; fill-column: 78; -*-
+#+TITLE: Emacs configuration file
+#+AUTHOR: Tom
+#+BABEL: :cache yes
+#+LATEX_HEADER: \usepackage{parskip}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc}
+#+PROPERTY: header-args :tangle init.el
+
+This file defines my Emacs config in org mode. 
+
+- Check out [[https://tammymakesthings.com/posts/2020-04-28-literate-emacs-configuration-in-org-mode/][this link]] for where I copied the method for creating the init file using org mode from.
+- [[https://sachachua.com/dotemacs/#orgb968991][Here's]] another example of a great emacs file.
+
+** Setting constants
+
+Location for specifying user and system specific constants.
+
+#+begin_src emacs-lisp :tangle yes
 (setq user-full-name "Thomas Dickson")
 
 (if (string= (system-name) "craptop") 
@@ -5,26 +24,36 @@
     (setq user-emacs-directory "/home/thomas/.emacs.d/")
     (setq org-default-notes-file "/home/thomas/org-admin/organiser.org")
     (setq org-agenda-files (quote ("/home/thomas/org-admin"))))
+#+end_src
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Automatically tangle init.org on save to produce init.el
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+** Creating init.el from org mode
 
-(defvar user/init-org-file (concat user-emacs-directory "init.org"))
-(defvar user/init-el-file  (concat user-emacs-directory "init.el"))
+This snippet allows emacs to run this org file on emacs initialisation.
 
-(defun tangle-init ()
-  "If the current buffer is 'init.org' the code-blocks are
-tangled, and the tangled file is compiled."
-  (when (equal (buffer-file-name)
-               (expand-file-name user/init-org-file ))
-    ;; Avoid running hooks when tangling.
-    (let ((prog-mode-hook nil))
-      (org-babel-tangle)
-      (byte-compile-file user/init-el-file))))
+#+begin_src emacs-lisp
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Automatically tangle init.org on save to produce init.el
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(add-hook 'after-save-hook 'tangle-init)
+  (defvar user/init-org-file (concat user-emacs-directory "init.org"))
+  (defvar user/init-el-file  (concat user-emacs-directory "init.el"))
 
+  (defun tangle-init ()
+    "If the current buffer is 'init.org' the code-blocks are
+  tangled, and the tangled file is compiled."
+    (when (equal (buffer-file-name)
+                 (expand-file-name user/init-org-file ))
+      ;; Avoid running hooks when tangling.
+      (let ((prog-mode-hook nil))
+        (org-babel-tangle)
+        (byte-compile-file user/init-el-file))))
+
+  (add-hook 'after-save-hook 'tangle-init)
+#+end_src
+
+** Configuring UI/UX settings
+
+#+begin_src emacs-lisp
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)                                                   ; Disable visible scrollbar
 (tool-bar-mode -1)                                                     ; Disable the toolbar
@@ -36,7 +65,16 @@ tangled, and the tangled file is compiled."
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)                ; Bind Esc to escape
 (global-visual-line-mode t)                                            ; Wrap word at the end of line
 (add-to-list 'default-frame-alist '(fullscreen . maximized))           ; Maximise emacs on start
+#+end_src
 
+#+RESULTS:
+: keyboard-escape-quit
+
+** Package management
+
+Initialise package management repos and tools.
+
+#+begin_src emacs-lisp
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -53,18 +91,44 @@ tangled, and the tangled file is compiled."
 
 (require 'use-package)
 (setq use-package-always-ensure t)
+#+end_src 
 
+#+RESULTS:
+: t
+
+** Backups
+
+Specifying backup behaviour.
+
+#+begin_src emacs-lisp
 (setq backup-directory-alist '(("." . "~/.emacs.d/emacs/backups")))
 (setq delete-old-versions -1)
 (setq version-control t)
 (setq vc-make-backup-files t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+#+end_src
 
+#+RESULTS:
+| .* | ~/.emacs.d/auto-save-list/ | t |
+
+** Doom modeline
+
+[[https://seagle0128.github.io/doom-modeline/][Doom modeline]] is quite nice.
+
+#+begin_src emacs-lisp
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
+#+end_src 
 
+#+RESULTS:
+
+** Ivy
+
+[[https://github.com/abo-abo/swiper][Ivy is]] used for completion.
+
+#+begin_src emacs-lisp
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
@@ -82,11 +146,30 @@ tangled, and the tangled file is compiled."
          ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
+#+end_src
 
+#+RESULTS:
+
+** Org mode configuration
+
+*** Loading optional modules
+
+#+begin_src emacs-lisp
 (setq org-modules '(org-habit))
 (eval-after-load 'org
   '(org-load-modules-maybe t))
+#+end_src
 
+#+RESULTS:
+: t
+
+*** Line numbers
+
+Org mode configuration. Using this [[https://sachachua.com/blog/2015/02/learn-take-notes-efficiently-org-mode/][blog post]] for inspiration.
+
+Setting line numbers on/off for various modes.
+
+#+begin_src emacs-lisp
 (column-number-mode)
 (global-display-line-numbers-mode t)
 
@@ -94,29 +177,70 @@ tangled, and the tangled file is compiled."
                 term-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
 
+#+RESULTS:
+
+*** Useful key bindings
+
+Setting key bindings:
+
+1. C-c o to open up the main org file from emacs.
+2. C-c c to open up task capture.
+3. C-c a to open up agenda mode.
+
+#+begin_src emacs-lisp
 (global-set-key (kbd "C-c o") 
                 (lambda () (interactive) (find-file "~/organiser.org")))
 (global-set-key (kbd "C-c c") 'org-capture)
 (global-set-key (kbd "C-c a") 'org-agenda)
+#+end_src
 
+#+RESULTS:
+: org-agenda
+
+*** Tags and todo states
+
+Specifying org mode behaviour:
+
+1. Todo keywords
+1. Tags
+
+#+begin_src emacs-lisp
 (setq org-todo-keywords
   '((sequence "TODO" "IN-PROGRESS" "WAITING" "DONE")))
-(setq org-tag-alist '(("@work" . ?w) ("@home" . ?h) ("@phys" . ?p) ("@scala" . ?s) ("@lisp" . ?l)))
+(setq org-tag-alist '(("@work" . ?w) ("@home" . ?h) ("@phys" . ?p) ("@scala" . ?s) ("@lisp" . ?l))) 
+#+end_src
 
+#+RESULTS:
+: ((@work . 119) (@home . 104) (@phys . 112) (@scala . 115) (@lisp . 108))
+
+** Org babel behaviour
+
+Defining org-babel behaviour - enabling literate programming.
+
+#+begin_src emacs-lisp
 ;; Run/highlight code using babel in org-mode
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(
    (lisp . t)
    (shell . t)
-   (sql . t)
+   ;; Include other languages here...
    ))
 ;; Syntax highlight in #+BEGIN_SRC blocks
 (setq org-src-fontify-natively t)
 ;; Don't prompt before running code in org
 (setq org-confirm-babel-evaluate nil)
+#+end_src
 
+#+RESULTS:
+
+** More useful packages
+
+Some more nice packages for use.
+
+#+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -124,7 +248,14 @@ tangled, and the tangled file is compiled."
   :init (load-theme 'doom-palenight t))
 
 (use-package all-the-icons)
+#+end_src
 
+#+RESULTS:
+: t
+
+** Common lisp development
+
+#+begin_src emacs-lisp
 (use-package slime)
 
 ;; Replace "sbcl" with the path to your implementation
@@ -144,7 +275,15 @@ tangled, and the tangled file is compiled."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+#+end_src
 
+#+RESULTS:
+
+** Snippets with Yasnippet
+
+Configuring [[https://github.com/joaotavora/yasnippet][yasnippet]].
+
+#+begin_src emacs-lisp
 (use-package yasnippet)
 
 (setq yas-snippet-dirs
@@ -154,23 +293,37 @@ tangled, and the tangled file is compiled."
 
 (define-key yas-minor-mode-map [(tab)] nil)
 (define-key yas-minor-mode-map (kbd "TAB") nil)
+#+end_src
 
-(use-package magit
-  :ensure t)
+#+RESULTS:
 
+** Magit
+** Dired
+
+#+begin_src emacs-lisp
+
+#+end_src
+
+** Projectile
+
+#+begin_src emacs-lisp
 (use-package projectile)
 (projectile-mode +1)
 (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+#+end_src
 
+#+RESULTS:
+: projectile-command-map
+
+** Avy
+
+Avy is used to jump between points in Emacs. [[http://pragmaticemacs.com/emacs/super-efficient-movement-using-avy/][Here's]] the source of the key combination.
+
+#+begin_src lisp
 (use-package avy
   :ensure t
   :bind (("M-s" . avy-goto-word-1)))
+#+end_src
 
-(use-package markdown-mode
-  :ensure t
-  :commands (markdown-mode gfm-mode)
-  :mode (("README\\.md\\'" . gfm-mode)
-         ("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "multimarkdown"))
+

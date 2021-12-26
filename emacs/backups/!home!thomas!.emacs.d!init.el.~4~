@@ -110,7 +110,7 @@ tangled, and the tangled file is compiled."
  '(
    (lisp . t)
    (shell . t)
-   (sql . t)
+   ;; Include other languages here...
    ))
 ;; Syntax highlight in #+BEGIN_SRC blocks
 (setq org-src-fontify-natively t)

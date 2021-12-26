@@ -1,0 +1,9 @@
+---                                                                          
+layout: post                                                                   
+title: "When to use JSONB as column type"                                      
+description: A review of different sources on when JSONB is suitable for use.  
+published: true                                                                
+future: true                                                                   
+mathjax: true                                                                  
+categories: [Postgres, SQL]                                                    
+---                                                                           

@@ -1,0 +1,10 @@
+* Designing an app for tracking my workouts
+
+Stick to what I know:
+
+- Python3 and Streamlit for the front end
+- Postgres and Supabase for the back end
+
+What is the most important thing about any app design?
+
+The schema.

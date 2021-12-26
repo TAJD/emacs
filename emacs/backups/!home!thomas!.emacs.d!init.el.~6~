@@ -137,7 +137,7 @@ tangled, and the tangled file is compiled."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (slime use-package solarized-theme rainbow-delimiters org-bullets ivy doom-themes doom-modeline))))
+    (elpy slime use-package solarized-theme rainbow-delimiters org-bullets ivy doom-themes doom-modeline))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -174,3 +174,9 @@ tangled, and the tangled file is compiled."
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
+
+(use-package elpy
+   :ensure t)
+
+(use-package flycheck
+   :ensure t)

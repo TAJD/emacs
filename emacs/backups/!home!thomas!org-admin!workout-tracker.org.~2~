@@ -1,0 +1,47 @@
+* Designing an app for tracking my workouts
+
+Stick to what I know:
+
+- Python3 and Streamlit for the front end
+- Postgres and Supabase for the back end
+
+What is the most important thing about any app design?
+
+The schema. Key things to record:
+
+1. Workouts
+1. Weight
+1. Mood
+1. Sleep
+
+- Table to record date and workout number
+- Table to record workout number and exercise number
+- Table to record exercise number and set/weight/reps
+- Table to record daily metrics
+
+[[https://www.orgmode.org/worg/org-contrib/babel/languages/ob-doc-sql.html][Notes for using SQL in org-mode]]
+
+** Create database
+
+To be run seperately in the command line: (password)
+
+#+begin_src shell
+sudo -u postgres createuser -P -s -e testuser
+sudo -u postgres createdb testdb -O testuser
+#+end_src
+
+Grant all priviledges to test user
+
+#+begin_src sql
+GRANT ALL PRIVILEGES ON DATABASE testdb TO testuser;
+#+end_src
+
+#+name: my-query
+#+header: :engine "postgres"
+#+header: :dbport 5432
+#+header: :dbuser testuser
+#+header: :dbpassword password
+#+header: :database testdb
+#+begin_src sql
+  SELECT * FROM pg_database
+#+end_src

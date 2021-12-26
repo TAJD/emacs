@@ -1,0 +1,19 @@
+import streamlit as st
+import pandas as pd
+
+from pages.utils import init_connection, get_git_hash
+
+conn = init_connection()
+
+def app():
+    st.header("Workouts")
+
+    most_recent_workout = pd.read_sql("""
+    select *
+    from workouts
+    order by workout_id desc
+    """, conn)
+
+    git_hash, git_msg = get_git_hash()
+    
+    st.text("Message: {} \nHash: {}".format(git_hash, git_msg))

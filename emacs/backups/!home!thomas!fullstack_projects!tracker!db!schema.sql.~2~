@@ -1,0 +1,78 @@
+\echo 'Tracker database schema'
+
+\set VERBOSITY terse
+\set ON ERROR STOP true
+
+do language plpgsql $$ declare
+    exc_message text;
+    exc_context text;
+    exc_detail text;
+begin
+
+raise notice 'dropping schemas';
+drop schema if exists data cascade;
+
+raise notice 'creating schemas';
+create schema if not exists data;
+
+raise notice 'populating schema data';
+do $data$ begin
+   set search_path = data, public;
+
+   drop table if exists measurements;
+   create table if not exists measurements (
+   	  measurement_id serial primary key
+	  , measurement_date date
+	  , calories int
+	  , protein int
+	  , carbohydrates int
+	  , fat int
+	  , alchohol boolean
+	  , weight real
+	  , neck real
+	  , bicep real
+	  , waist real
+	  , thigh real
+	  , chest real
+   );
+
+   drop table if exists exercises;
+   create table if not exists exercises (
+   	  exercise_id serial primary key
+	  , exercise_name text unique
+   );
+
+   drop table if exists workouts;
+   create table if not exists workouts (
+   	  workout_id serial primary key
+	  , workout_name text
+	  , workout_date date
+   );
+
+   drop table if exists workout_stages;
+   create table if not exists workout_stages (
+   	  workout_stage_id serial primary key
+	  , workout_stage_number int
+	  , workout_id int references workouts on delete cascade
+   );
+
+   drop table if exists sets;
+   create table if not exists sets (
+   	  set_id serial primary key
+	  , set_number int
+	  , set_exercise int references exercises (exercise_id) on delete restrict
+	  , set_weight real
+	  , set_reps int
+	  , workout_stage_id int references workout_stages (workout_stage_id) on delete cascade
+   );
+
+   
+end $data$;
+
+exception when others then
+    get stacked diagnostics exc_message = message_text;
+    get stacked diagnostics exc_context = pg_exception_context;
+    get stacked diagnostics exc_detail = pg_exception_detail;
+    raise exception E'\n------\n%\n%\n------\n\nCONTEXT:\n%\n', exc_message, exc_detail, exc_context;
+end $$;
+

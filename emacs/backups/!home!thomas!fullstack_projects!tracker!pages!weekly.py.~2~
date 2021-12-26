@@ -1,0 +1,38 @@
+import streamlit as st
+import pandas as pd
+
+from bokeh.plotting import figure
+
+from pages.utils import init_connection
+
+def format_date_column(df):
+    """Convert year and week columns into a date."""
+    df['formatted_date'] = df.year * 1000 + df.week * 10 + 0
+    df['date'] = pd.to_datetime(df['formatted_date'], format='%Y%W%w')
+    return df.drop(columns=['formatted_date', 'year', 'week'])
+
+def get_weekly_tonnage():
+    query = """
+    set search_path = data, public;
+    select * from weekly_tonnage;
+    """
+    with init_connection() as conn:
+        df = pd.read_sql(query, conn)
+    return format_date_column(df)
+
+def get_weekly_measurements():
+    query = """
+    set search_path = data, public;
+    select *
+    from weekly_averages;
+    """
+    with init_connection() as conn:
+        df = pd.read_sql(query, conn)
+    return df.dropna(axis=1, how='all')
+
+def app():
+    st.header("Weekly summary")
+    df_weekly = get_weekly_measurements()
+    st.dataframe(df_weekly)
+    df_tonnage = get_weekly_tonnage()
+    st.dataframe(df_tonnage)

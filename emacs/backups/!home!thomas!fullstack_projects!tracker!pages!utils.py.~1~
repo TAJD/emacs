@@ -1,0 +1,27 @@
+import subprocess
+import psycopg2
+
+# Perform query.
+# Uses st.cache to only rerun when the query changes or after 10 min.
+@st.cache(ttl=600)
+def run_query(query):
+    with conn.cursor() as cur:
+        cur.execute(query)
+        return cur.fetchall()
+
+def parse_subprocess(sub):
+    """Convert output of subprocess.run into a parsed string."""
+    return sub.stdout.decode("utf-8").replace("\n", "")
+
+@st.cache
+def get_git_hash():
+    """Get the current git hash."""
+    git_commit_msg = subprocess.run(['git', 'show', '-s', '--format=%B'], stdout=subprocess.PIPE)
+    git_hash = subprocess.run(['git', 'log', '-1', '--format="%H"'], stdout=subprocess.PIPE)
+    return parse_subprocess(git_commit_msg), parse_subprocess(git_hash)
+
+# Initialize connection.
+# Uses st.cache to only run once.
+# @st.cache(allow_output_mutation=True, hash_funcs={"_thread.RLock": lambda _: None})
+def init_connection():
+    return psycopg2.connect(**st.secrets["postgres"])

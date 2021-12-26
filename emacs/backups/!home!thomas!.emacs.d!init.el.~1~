@@ -110,7 +110,7 @@ tangled, and the tangled file is compiled."
  '(
    (lisp . t)
    (shell . t)
-   (sql . t)
+   ;; Include other languages here...
    ))
 ;; Syntax highlight in #+BEGIN_SRC blocks
 (setq org-src-fontify-natively t)
@@ -155,22 +155,4 @@ tangled, and the tangled file is compiled."
 (define-key yas-minor-mode-map [(tab)] nil)
 (define-key yas-minor-mode-map (kbd "TAB") nil)
 
-(use-package magit
-  :ensure t)
-
-(use-package projectile)
-(projectile-mode +1)
-(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-
-(use-package avy
-  :ensure t
-  :bind (("M-s" . avy-goto-word-1)))
-
-(use-package markdown-mode
-  :ensure t
-  :commands (markdown-mode gfm-mode)
-  :mode (("README\\.md\\'" . gfm-mode)
-         ("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "multimarkdown"))
+(use-package magit)

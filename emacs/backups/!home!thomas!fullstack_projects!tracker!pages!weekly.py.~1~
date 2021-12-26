@@ -1,0 +1,22 @@
+import streamlit as st
+import pandas as pd
+
+from bokeh.plotting import figure
+
+from pages.utils import init_connection
+
+def get_weekly_data():
+    query = """
+    set search_path = data, public;
+    select *
+    from weekly_averages
+    """
+    with init_connection() as conn:
+        df = pd.read_sql(query, conn)
+    return df
+
+
+def app():
+    st.header("Weekly summary")
+    df_weekly = get_weekly_data()
+    st.dataframe(df_weekly)

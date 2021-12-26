@@ -1,0 +1,51 @@
+import streamlit as st
+import pandas as pd
+
+from bokeh.plotting import figure
+
+from pages.utils import init_connection
+
+def get_measurement_data():
+    query = """
+    set search_path = data, public;
+    select *
+    from measurements
+    """
+    with init_connection() as conn:
+        df = pd.read_sql(query, conn)
+    return df
+
+
+def parsed_measurement_df(df: pd.DataFrame):
+    """Rename columns in dataframe returned from timeseries data."""
+    column_name_map = {
+            "measurement_date": "Date"
+        }
+    df_mod = df.drop(columns=['measurement_id'])
+    return df_mod.rename(columns=column_name_map)
+
+
+def plot_measurement_timeseries(df: pd.DataFrame):
+    """Scatter plot of measurement timeseries data."""
+    x = df['Date'].values
+    y = df['calories'].values
+
+    p = figure(
+        title="Timeseries plot",
+        x_axis_label='Date',
+        y_axis_label='Measurements'
+        )
+
+    p.scatter(x, y, legend_label="Measurement")
+    st.bokeh_chart(p, use_container_width=True)
+
+def app():
+    st.header("Time series")
+    measurement_data = get_measurement_data()
+    renamed_measurement_data = parsed_measurement_df(measurement_data)
+
+    with st.expander("Charts"):
+        plot_measurement_timeseries(renamed_measurement_data)
+
+    with st.expander("Raw data"):
+        st.dataframe(renamed_measurement_data)

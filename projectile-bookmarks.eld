@@ -1,0 +1,1 @@
+("~/fullstack_projects/tracker/" "~/personalBlog/" "~/.emacs.d/")

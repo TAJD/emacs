@@ -1,0 +1,10 @@
+# Readme
+
+Python environment management using pipenv. 
+					 
+Use `pipenv shell` to activate environment in local repo.
+														 
+Front end development in app.py with Streamlit and Psycopg2. 
+
+Backend development using postgresql.
+

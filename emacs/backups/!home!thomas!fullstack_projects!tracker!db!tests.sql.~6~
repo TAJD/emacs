@@ -1,0 +1,24 @@
+\echo 'Run tests'
+
+\set VERBOSITY terse
+\set ON ERROR STOP true
+
+set search_path = data, public;
+
+\echo 'list exercises'
+select * from exercises;
+
+\echo 'list recent workout ids/dates'
+select * from workouts
+order by workout_id desc
+limit 10;
+
+\echo 'Develop weekly view on measurements'
+select *
+from weekly_averages;
+
+\echo 'tonnage per exercise per workout'
+select * from workout_tonnage;
+
+\echo 'weekly tonnage'
+select * from weekly_tonnage;
